@@ -181,10 +181,10 @@ class FlxElement extends FlxObject implements IFlxDestroyable
 			m[1] = m[4] = m[12] = m[13] = 0;
 		}
 
-		var pos = symbol ? element.SI.bitmap.POS : element.ASI.POS;
+		var pos = symbol ? element.SI.bitmap?.POS : element.ASI.POS;
 		if (pos == null)
 			pos = {x: 0, y: 0};
-		return new FlxElement((symbol) ? element.SI.bitmap.N : element.ASI.N, params, new FlxMatrix(m[0], m[1], m[4], m[5], m[12] + pos.x, m[13] + pos.y));
+		return new FlxElement((symbol) ? element.SI.bitmap?.N : element.ASI.N, params, new FlxMatrix(m[0], m[1], m[4], m[5], m[12] + pos.x, m[13] + pos.y));
 	}
 
 	function set_bitmap(value:String)
