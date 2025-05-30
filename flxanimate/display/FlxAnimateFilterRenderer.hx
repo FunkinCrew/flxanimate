@@ -20,7 +20,6 @@ import openfl.filters.BitmapFilter;
 import openfl.geom.Matrix;
 import openfl.geom.ColorTransform;
 import openfl.geom.Point;
-
 import openfl.display._internal.Context3DGraphics;
 #if (js && html5)
 import openfl.display.CanvasRenderer;
@@ -30,7 +29,6 @@ import lime._internal.graphics.ImageCanvasUtil;
 import openfl.display.CairoRenderer;
 import openfl.display._internal.CairoGraphics as GfxRenderer;
 #end
-
 
 @:access(openfl.display.OpenGLRenderer)
 @:access(openfl.filters.BitmapFilter)
@@ -57,7 +55,7 @@ class FlxAnimateFilterRenderer
 	public function new()
 	{
 		if (FlxG.game.stage.context3D != null)
-    {
+		{
 			// context = new openfl.display3D.Context3D(null);
 			renderer = new OpenGLRenderer(FlxG.game.stage.context3D);
 			renderer.__worldTransform = new Matrix();
@@ -67,43 +65,11 @@ class FlxAnimateFilterRenderer
 		}
 	}
 
-	@:noCompletion function setRenderer(renderer:DisplayObjectRenderer, rect:Rectangle)
+	public function applyFilter(bmp:BitmapData, target:BitmapData, target1:BitmapData, target2:BitmapData, filters:Array<BitmapFilter>,
+			?rect:Rectangle = null, ?mask:BitmapData, ?maskPos:FlxPoint)
 	{
-		@:privateAccess
-		if (FlxG.game.stage.context3D != null)
-		{
-			var displayObject = FlxG.game;
-			var pixelRatio = FlxG.game.stage.__renderer.__pixelRatio;
-
-			var offsetX = rect.x > 0 ? Math.ceil(rect.x) : Math.floor(rect.x);
-			var offsetY = rect.y > 0 ? Math.ceil(rect.y) : Math.floor(rect.y);
-			if (renderer.__worldTransform == null)
-			{
-				renderer.__worldTransform = new Matrix();
-				renderer.__worldColorTransform = new ColorTransform();
-			}
-			if (displayObject.__cacheBitmapColorTransform == null) displayObject.__cacheBitmapColorTransform = new ColorTransform();
-
-			renderer.__stage = displayObject.stage;
-
-			renderer.__allowSmoothing = true;
-			renderer.__setBlendMode(NORMAL);
-			renderer.__worldAlpha = 1 / displayObject.__worldAlpha;
-
-			renderer.__worldTransform.identity();
-			renderer.__worldTransform.invert();
-			//renderer.__worldTransform.concat(new Matrix());
-			renderer.__worldTransform.tx -= offsetX;
-			renderer.__worldTransform.ty -= offsetY;
-
-			renderer.__pixelRatio = pixelRatio;
-
-		}
-	}
-
-	public function applyFilter(bmp:BitmapData, target:BitmapData, target1:BitmapData, target2:BitmapData, filters:Array<BitmapFilter>, ?rect:Rectangle = null, ?mask:BitmapData, ?maskPos:FlxPoint)
-	{
-		if(FlxG.game.stage.context3D == null) return;
+		if (FlxG.game.stage.context3D == null)
+			return;
 
 		if (mask != null)
 		{
@@ -127,11 +93,8 @@ class FlxAnimateFilterRenderer
 
 		var bitmap3 = target2;
 
-
-		if (rect != null)
+		if (rect != null && filters != null && filters.length > 0)
 			bmp.__renderTransform.translate(Math.abs(rect.x), Math.abs(rect.y));
-
-
 		renderer.__setRenderTarget(bitmap);
 		if (bmp != bitmap)
 			renderer.__renderFilterPass(bmp, renderer.__defaultDisplayShader, true);
@@ -174,44 +137,11 @@ class FlxAnimateFilterRenderer
 		}
 	}
 
-	public function applyBlend(blend:BlendMode, bitmap:BitmapData)
+	public function graphicstoBitmapData(gfx:Graphics, ?target:BitmapData = null,
+			?point:FlxPoint = null) // TODO!: Support for CPU based games (Cairo/Canvas only renderers)
 	{
-		if(FlxG.game.stage.context3D == null) return bitmap;
-
-		bitmap.__update(false, true);
-		var bmp = new BitmapData(bitmap.width, bitmap.height, 0);
-
-		#if (js && html5)
-		ImageCanvasUtil.convertToCanvas(bmp.image);
-		@:privateAccess
-		var renderer = new CanvasRenderer(bmp.image.buffer.__srcContext);
-		#else
-		var renderer = new CairoRenderer(new Cairo(bmp.getSurface()));
-		#end
-
-		// setRenderer(renderer, bmp.rect);
-
-		var m = new Matrix();
-		var c = new ColorTransform();
-		renderer.__allowSmoothing = true;
-		renderer.__overrideBlendMode = blend;
-		renderer.__worldTransform = m;
-		renderer.__worldAlpha = 1;
-		renderer.__worldColorTransform = c;
-
-		renderer.__setBlendMode(blend);
-		#if (js && html5)
-		bmp.__drawCanvas(bitmap, renderer);
-		#else
-		bmp.__drawCairo(bitmap, renderer);
-		#end
-
-		return bitmap;
-	}
-
-	public function graphicstoBitmapData(gfx:Graphics, ?target:BitmapData = null, point:FlxPoint = null) // TODO!: Support for CPU based games (Cairo/Canvas only renderers)
-	{
-		if (gfx.__bounds == null || FlxG.game.stage.context3D == null) return null;
+		if (gfx.__bounds == null || FlxG.game.stage.context3D == null)
+			return null;
 
 		var cacheRTT = renderer.__context3D.__state.renderToTexture;
 		var cacheRTTDepthStencil = renderer.__context3D.__state.renderToTextureDepthStencil;
@@ -219,7 +149,6 @@ class FlxAnimateFilterRenderer
 		var cacheRTTSurfaceSelector = renderer.__context3D.__state.renderToTextureSurfaceSelector;
 
 		var bounds = gfx.__owner.getBounds(null);
-
 
 		var bmp = (target == null) ? new BitmapData(Math.ceil(bounds.width), Math.ceil(bounds.height), true, 0) : target;
 
@@ -242,13 +171,11 @@ class FlxAnimateFilterRenderer
 
 		renderer.__worldTransform.identity();
 
-
 		var gl = renderer.__gl;
 		var renderBuffer = bmp.getTexture(context);
 
 		@:privateAccess
 		gl.readPixels(0, 0, Math.round(bmp.width), Math.round(bmp.height), renderBuffer.__format, gl.UNSIGNED_BYTE, bmp.image.data);
-
 
 		if (cacheRTT != null)
 		{

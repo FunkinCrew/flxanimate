@@ -15,11 +15,11 @@ class FlxTimeline implements IFlxDestroyable
 	/**
 	 * The total of layers the timeline has.
 	 */
-	public var length(get, null):Int;
+	public var length(get, never):Int;
 	/**
 	 * The total length of frames that the timeline has.
 	 */
-	public var totalFrames(get, null):Int;
+	public var totalFrames(get, never):Int;
 	/**
 	 * @param layers the amount of layers the timeline is set.
 	 */
@@ -155,7 +155,7 @@ class FlxTimeline implements IFlxDestroyable
 		return layer;
 	}
 
-	public function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
+	public inline function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
 	{
 		for (layer in _layers)
 		{
@@ -198,6 +198,18 @@ class FlxTimeline implements IFlxDestroyable
 		for (layer in timeline.L)
 		{
 			layers.push(FlxLayer.fromJSON(layer));
+		}
+
+		return new FlxTimeline(layers);
+	}
+
+	public static function fromJSONEx(timeline:Timeline)
+	{
+		if (timeline == null || timeline.L == null) return null;
+		var layers = [];
+		for (layer in timeline.L)
+		{
+			layers.push(FlxLayer.fromJSONEx(layer));
 		}
 
 		return new FlxTimeline(layers);
