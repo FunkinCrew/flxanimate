@@ -63,6 +63,7 @@ class SymbolParameters implements IFilterable
 	 * @see [Types of Symbols](https://helpx.adobe.com/animate/how-to/types-of-symbols.html)
 	 */
 	public var type(default, set):SymbolT;
+
 	/**
 	 * The type of loop that the symbol is been set to.
 	 * There are three types (excluding the reversed options):
@@ -72,15 +73,17 @@ class SymbolParameters implements IFilterable
 	 * **WARNING:** if `type` is **NOT** set to `Graphic`, this option will not let you modify it.
 	 */
 	public var loop(default, set):Loop;
+
 	/**
 	 * Whether the looping animation is reversed or not.
 	 * It is ignored when `loop` is set to `SingleFrame`.
 	 */
 	public var reverse:Bool;
+
 	/**
 	 * An `Int` that references the frame of the referenced symbol.
 	 */
-	public var firstFrame(default, set):Int =  0;
+	public var firstFrame(default, set):Int = 0;
 
 	@:allow(flxanimate.animate.FlxKeyFrame)
 	@:allow(flxanimate.animate.FlxElement)
@@ -89,6 +92,7 @@ class SymbolParameters implements IFilterable
 	 * Internal, checks the current frame it's at at the moment to force a filter render.
 	 */
 	var _curFrame:Int = 0;
+
 	/**
 	 * The referenced symbol's name. **WARNING:** do NOT confuse with `instance`!
 	 */
@@ -108,10 +112,9 @@ class SymbolParameters implements IFilterable
 	var _renderDirty:Bool = false;
 
 	@:allow(flxanimate.animate.FlxKeyFrame)
-
 	@:allow(flxanimate.FlxAnimate)
 	@:allow(flxanimate.animate.FlxAnim)
-	var _colorEffect(get, null):ColorTransform;
+	var _colorEffect(get, never):ColorTransform;
 
 	public var transformationPoint:FlxPoint;
 
@@ -120,7 +123,6 @@ class SymbolParameters implements IFilterable
 	public var cacheAsBitmapMatrix:FlxMatrix;
 
 	var _needSecondBmp:Bool = false;
-
 
 	/**
 	 * Creates a new `SymbolParameters` instance.
@@ -161,9 +163,11 @@ class SymbolParameters implements IFilterable
 		_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
 		_filterCamera = FlxDestroyUtil.destroy(_filterCamera);
 		_filterMatrix = null;
-		if (_bmp1 != null) FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
+		if (_bmp1 != null)
+			FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
 		_bmp1 = FlxDestroyUtil.dispose(_bmp1);
-		if (_bmp2 != null) FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+		if (_bmp2 != null)
+			FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
 		_bmp2 = FlxDestroyUtil.dispose(_bmp2);
 	}
 
@@ -192,14 +196,14 @@ class SymbolParameters implements IFilterable
 			_renderDirty = true;
 			_curFrame = frame;
 		}
-
 		@:privateAccess
 		if (colorEffect != null && colorEffect.renderDirty)
 			colorEffect.process();
 
-		if (filters == null || filters.length == 0 || _renderDirty) return;
+		if (filters == null || filters.length == 0 || _renderDirty)
+			return;
 
-			@:privateAccess
+		@:privateAccess
 		for (filter in filters)
 		{
 			if (filter.__renderDirty)
@@ -209,7 +213,8 @@ class SymbolParameters implements IFilterable
 
 	function set_loop(loop:Loop)
 	{
-		if (type == null) return this.loop = null;
+		if (type == null)
+			return this.loop = null;
 		this.loop = switch (type)
 		{
 			case MovieClip: Loop;
@@ -267,9 +272,11 @@ class SymbolParameters implements IFilterable
 
 	function set_filters(filters:Array<BitmapFilter>)
 	{
-		if (type == Graphic) return null;
+		if (type == Graphic)
+			return null;
 
-		if (filters == this.filters) return filters;
+		if (filters == this.filters)
+			return filters;
 
 		_needSecondBmp = false;
 		if (filters != null && filters.length > 0)
@@ -291,9 +298,9 @@ class SymbolParameters implements IFilterable
 			{
 				FlxG.bitmap.remove(_filterFrame.parent);
 				_filterFrame = FlxDestroyUtil.destroy(_filterFrame);
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
+				FlxG.bitmap.removeByKey(FlxG.bitmap.findKeyForBitmap(_bmp1));
 				_bmp1 = FlxDestroyUtil.dispose(_bmp1);
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+				FlxG.bitmap.removeByKey(FlxG.bitmap.findKeyForBitmap(_bmp2));
 				_bmp2 = FlxDestroyUtil.dispose(_bmp2);
 			}
 		}
@@ -306,7 +313,8 @@ class SymbolParameters implements IFilterable
 		if (value == null)
 			value = NORMAL;
 
-		if (type == Graphic) return blendMode = NORMAL;
+		if (type == Graphic)
+			return blendMode = NORMAL;
 
 		if (blendMode != value)
 		{
@@ -319,13 +327,15 @@ class SymbolParameters implements IFilterable
 
 	function get_cacheAsBitmap()
 	{
-		if (type == Graphic) return false;
+		if (type == Graphic)
+			return false;
 
-
-		if (filters != null && filters.length > 0 || blendMode != NORMAL) return true;
+		if (filters != null && filters.length > 0 || blendMode != NORMAL)
+			return true;
 
 		return _cacheAsBitmap;
 	}
+
 	@:allow(flxanimate.FlxAnimate)
 	function updateBitmaps(rect:Rectangle)
 	{
@@ -336,9 +346,9 @@ class SymbolParameters implements IFilterable
 			if (_filterFrame != null)
 			{
 				_filterFrame.parent.destroy();
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp1)));
+				FlxG.bitmap.removeByKey(FlxG.bitmap.findKeyForBitmap(_bmp1));
 				if (_needSecondBmp)
-					FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+					FlxG.bitmap.removeByKey(FlxG.bitmap.findKeyForBitmap(_bmp2));
 			}
 			else
 			{
@@ -346,7 +356,7 @@ class SymbolParameters implements IFilterable
 				_filterFrame = new FlxFrame(null);
 			}
 
-			_filterFrame.parent = FlxG.bitmap.add(new BitmapData(Math.ceil(wid), Math.ceil(hei),0));
+			_filterFrame.parent = FlxG.bitmap.add(new BitmapData(Math.ceil(wid), Math.ceil(hei), 0));
 			_bmp1 = new BitmapData(Math.ceil(wid), Math.ceil(hei), 0);
 			FlxGraphic.fromBitmapData(_bmp1);
 			if (_needSecondBmp)
@@ -368,19 +378,21 @@ class SymbolParameters implements IFilterable
 				_bmp2.fillRect(_bmp2.rect, 0);
 			else if (_bmp2 != null)
 			{
-				FlxG.bitmap.remove(FlxG.bitmap.get(FlxG.bitmap.findKeyForBitmap(_bmp2)));
+				FlxG.bitmap.removeByKey(FlxG.bitmap.findKeyForBitmap(_bmp2));
 				_bmp2 = null;
 			}
-
 		}
 
 		_needSecondBmp = false;
 	}
+
 	function set_cacheAsBitmap(value:Bool)
 	{
-		if (type == Graphic) return false;
+		if (type == Graphic)
+			return false;
 
-		if (value) _renderDirty = true;
+		if (value)
+			_renderDirty = true;
 
 		return _cacheAsBitmap = value;
 	}

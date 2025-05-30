@@ -24,19 +24,24 @@ class FlxSymbol implements IFlxDestroyable
 	@:allow(flxanimate.FlxAnimate)
 	var activeCount:Int = 0;
 
+	var _parent:FlxSymbolDictionary = null;
+
 	var _sprites:Array<Sprite> = [];
 
 	public var timeline(default, null):FlxTimeline;
 	/**
 	 * The amount of frames the symbol has.
 	 */
-	public var length(get, null):Int;
+	public var length(get, never):Int;
 	/**
 	 * The name of the symbol.
 	 */
-	public var name(default, null):String;
+	public var name(default, set):String;
+	
+	@:allow(flxanimate.animate.FlxSymbolDictionary)
+	public var location(default, null):String;
 	@:noCompletion
-	@:deprecated("")
+	@:deprecated("ASDONASDOn")
 	public var labels(default, null):Map<String, FlxLabel>;
 
 	/**
@@ -47,7 +52,7 @@ class FlxSymbol implements IFlxDestroyable
 	/**
 	 * The amount of layers structured in names.
 	 */
-	public var layers(get, null):Array<String>;
+	public var layers(get, never):Array<String>;
 
 	/**
 	 * The current frame.
@@ -59,10 +64,8 @@ class FlxSymbol implements IFlxDestroyable
 
 	var _tick:Float;
 
-	@:allow(flxanimate.animate.FlxAnim)
-	function new(name:String, timeline:FlxTimeline)
+	public function new(name:String, timeline:FlxTimeline)
 	{
-		layers = [];
 		curFrame = 0;
 		this.timeline = timeline;
 		timeline._parent = this;
@@ -199,7 +202,7 @@ class FlxSymbol implements IFlxDestroyable
 		return frame;
 	}
 
-	public function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
+	public inline function updateRender(elapsed:Float, curFrame:Int, dictionary:Map<String, FlxSymbol>, ?swfRender:Bool = false)
 	{
 		timeline.updateRender(elapsed, curFrame, dictionary, swfRender);
 	}
@@ -413,5 +416,21 @@ class FlxSymbol implements IFlxDestroyable
 	function set_curFrame(value:Int)
 	{
 		return _curFrame = value;
+	}
+	function set_name(value:String = "")
+	{
+		if (value == "")
+			return name;
+
+		if (_parent != null)
+		{
+			_parent.removeSymbol(this);
+
+			name = value;
+
+			_parent.addSymbol(this);
+		}
+		
+		return name = value;
 	}
 }

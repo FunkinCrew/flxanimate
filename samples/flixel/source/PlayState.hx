@@ -26,6 +26,11 @@ class PlayState extends FlxState
 	 * Checks if the memory used should be only used for the texture atlas only.
 	 */
 	var optimiseMemory:Bool = false;
+
+	/**
+	 * Checks whether to use the ninja-girl using the old exporter AND the new exporter.
+	 */
+	var betterTA:Bool = true;
 	
 	// Controls.
 	
@@ -62,31 +67,10 @@ class PlayState extends FlxState
 			var bg = FlxGridOverlay.create(10, 10);
 			add(bg);
 		}
-		char = new FlxAnimate(0, 0, 'assets/images/ninja-girl');
+		char = new FlxAnimate(0, 0, 'assets/images/${(betterTA) ? "BetterTA/" : ""}ninja-girl${(optimised) ? "" : "-unoptimised"}');
 		char.screenCenter();
 		char.antialiasing = true;
 		add(char);
-		var bitmapData:BitmapData = null;
-
-		@:privateAccess
-		if (true)
-		{
-			bitmapData = new BitmapData(250, 250, 0);
-
-			bitmapData.fillRect(new openfl.geom.Rectangle(125, 125, 100, 100), 0xFF0000FF);
-
-			// var renderer:OpenGLRenderer = cast FlxG.stage.__renderer;
-			// var filter = new openfl.filters.BlurFilter(25, 0);
-
-			// var shader = new FlxShader();
-			// var context3D = FlxG.stage.context3D;
-			// var bmp = new Bitmap(bitmapData);
-			// bmp.filters = new openfl.filters.BlurFilter();
-		}
-		@:privateAccess
-		sprite = new FlxSprite();
-		sprite.screenCenter();
-		add(sprite);
 
 		var stuff = char.anim.getFrameLabels();
 		labels = [];
@@ -135,7 +119,6 @@ class PlayState extends FlxState
 		}
 
 		if (specialAnim) return;
-
 
 		var keyPressed:FlxKey = FlxG.keys.firstPressed();
 		

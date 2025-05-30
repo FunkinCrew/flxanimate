@@ -96,7 +96,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 
 		if (Path is String)
 		{
-			var str:String = cast(Path, String).split("\\").join("/");
+			var str:String = haxe.io.Path.normalize(cast(Path, String));
 			var text = (StringTools.contains(str, "/")) ? Assets.getText(str) : str;
 			json = haxe.Json.parse(text.split(String.fromCharCode(0xFEFF)).join(""));
 		}
@@ -200,13 +200,20 @@ class FlxAnimateFrames extends FlxAtlasFrames
 
 			var size = if (trimmed)
 			{
-				new Rectangle(Std.parseInt(texture.att.frameX), Std.parseInt(texture.att.frameY), Std.parseInt(texture.att.frameWidth),
+				new FlxRect(Std.parseInt(texture.att.frameX), Std.parseInt(texture.att.frameY), Std.parseInt(texture.att.frameWidth),
 					Std.parseInt(texture.att.frameHeight));
 			}
 			else
 			{
-				new Rectangle(0, 0, rect.width, rect.height);
+				new FlxRect(0, 0, rect.width, rect.height);
 			}
+
+            if (size.width == 0 || size.height == 0)
+            {
+                size.setSize(1,1);
+                frames.addEmptyFrame(size);
+                continue;
+            }
 
 			var angle = rotated ? FlxFrameAngle.ANGLE_NEG_90 : FlxFrameAngle.ANGLE_0;
 
@@ -232,6 +239,7 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	public static function fromJson(Path:FlxJson, ?Image:FlxGraphicAsset):FlxAtlasFrames
 	{
 		if (Path is String && !Assets.exists(Path))
+
 			return null;
 		var data:JsonNormal = (Path is String) ? haxe.Json.parse(Assets.getText(Path)) : Path;
 
@@ -405,8 +413,12 @@ class FlxAnimateFrames extends FlxAtlasFrames
 		if (rotated)
 			dimensions.setSize(dimensions.height, dimensions.width);
 
-		Frames.addAtlasFrame(dimensions, (sourceSize != null) ? sourceSize : FlxPoint.get(dimensions.x, dimensions.y),
-			(offset != null) ? offset.negate() : FlxPoint.get(), name, (rotated) ? ANGLE_NEG_90 : ANGLE_0);
+
+		if (dimensions.width == 0 || dimensions.height == 0)
+			Frames.addEmptyFrame(FlxRect.get(0, 0, 1, 1));
+		else
+			Frames.addAtlasFrame(dimensions, (sourceSize != null) ? sourceSize : FlxPoint.get(dimensions.x, dimensions.y),
+				(offset != null) ? offset.negate() : FlxPoint.get(), name, (rotated) ? ANGLE_NEG_90 : ANGLE_0);
 	}
 
 	/**

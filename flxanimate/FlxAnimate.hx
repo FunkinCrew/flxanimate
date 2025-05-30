@@ -22,7 +22,11 @@ import flxanimate.animate.*;
 import flxanimate.zip.Zip;
 import openfl.Assets;
 import haxe.io.BytesInput;
+#if (flixel >= "5.3.0")
 import flixel.sound.FlxSound;
+#else
+import flixel.system.FlxSound;
+#end
 import flixel.FlxG;
 import flxanimate.data.AnimationData;
 import flixel.FlxSprite;
@@ -32,6 +36,9 @@ import flixel.math.FlxMatrix;
 import openfl.geom.ColorTransform;
 import flixel.math.FlxMath;
 import flixel.FlxBasic;
+import flixel.graphics.frames.FlxFramesCollection;
+
+using flixel.util.FlxColorTransformUtil;
 
 typedef Settings = {
 	?ButtonSettings:Map<String, flxanimate.animate.FlxAnim.ButtonSettings>,
@@ -62,7 +69,7 @@ class FlxAnimate extends FlxSprite
 
 	public var filters:Array<BitmapFilter> = null;
 
-	public var showPivot(default, set):Bool;
+	public var showPivot(default, set):Bool = false;
 
 	var _pivot:FlxFrame;
 	var _indicator:FlxFrame;
@@ -84,16 +91,17 @@ class FlxAnimate extends FlxSprite
 	 *
 	 * @param X 		The initial X position of the sprite.
 	 * @param Y 		The initial Y position of the sprite.
-	 * @param Path      The path to the texture atlas, **NOT** the path of the any of the files inside the texture atlas (`Animation.json`, `spritemap.json`, etc).
+	 * @param directoryPath	The directory/folder where the atlas is located, or a zip compressed directory of our texture atlas json + spritesheet.
+	 * 				 		**NOT** the path of the any of the files inside the texture atlas (`Animation.json`, `spritemap.json`, etc).
 	 * @param Settings  Optional settings for the animation (antialiasing, framerate, reversed, etc.).
 	 */
-	public function new(X:Float = 0, Y:Float = 0, ?Path:String, ?Settings:Settings)
+	public function new(X:Float = 0, Y:Float = 0, ?directoryPath:String, ?Settings:Settings)
 	{
 		super(X, Y);
 		anim = new FlxAnim(this);
 		showPivot = false;
-		if (Path != null)
-			loadAtlas(Path);
+		if (directoryPath != null)
+			loadAtlas(directoryPath);
 		if (Settings != null)
 			setTheSettings(Settings);
 
@@ -105,14 +113,22 @@ class FlxAnimate extends FlxSprite
 	 * Loads a regular atlas.
 	 * @param Path The path where the atlas is located. Must be the folder, **NOT** any of the contents of it!
 	 */
-	public function loadAtlas(Path:String)
+	public function loadAtlas(atlasDirectory:String)
 	{
-		if (!Assets.exists('$Path/Animation.json') && haxe.io.Path.extension(Path) != "zip")
+		var p = haxe.io.Path.removeTrailingSlashes(haxe.io.Path.normalize(atlasDirectory));
+		if (!Assets.exists('$atlasDirectory/Animation.json') && haxe.io.Path.extension(atlasDirectory) != "zip")
 		{
-			FlxG.log.error('Animation file not found in specified path: "$Path", have you written the correct path?');
+			FlxG.log.error('Animation file not found in specified path: "${atlasDirectory}", have you written the correct path?');
 			return;
 		}
-		loadSeparateAtlas(atlasSetting(Path), FlxAnimateFrames.fromTextureAtlas(Path));
+		if (!Assets.exists('$atlasDirectory/metadata.json'))
+			loadSeparateAtlas(atlasSetting(atlasDirectory), FlxAnimateFrames.fromTextureAtlas(atlasDirectory));
+		else
+		{
+			loadSeparateAtlas(null, FlxAnimateFrames.fromTextureAtlas(atlasDirectory));
+			
+			anim._loadExAtlas(atlasDirectory);
+		}
 	}
 	/**
 	 * Function in handy to load atlases that share same animation/frames but dont necessarily mean it comes together.
@@ -184,9 +200,11 @@ class FlxAnimate extends FlxSprite
 			var json:AnimAtlas = haxe.Json.parse(animation);
 
 			anim._loadAtlas(json);
+
+			if (anim != null && anim.curInstance != null)
+				origin = anim.curInstance.symbol.transformationPoint;
+
 		}
-		if (anim != null)
-			origin = anim.curInstance.symbol.transformationPoint;
 	}
 
 	/**
@@ -194,18 +212,20 @@ class FlxAnimate extends FlxSprite
 	 */
 	public override function draw():Void
 	{
+    
+    if( alpha <= 0) return;
 		_matrix.identity();
 		if (flipX)
 		{
 			_matrix.a *= -1;
 
-			_matrix.tx += width;
+			//_matrix.tx += width;
 
 		}
 		if (flipY)
 		{
 			_matrix.d *= -1;
-			_matrix.ty += height;
+			//_matrix.ty += height;
 		}
 
 		_flashRect.setEmpty();
@@ -223,9 +243,26 @@ class FlxAnimate extends FlxSprite
 
 		if (showPivot)
 		{
-			drawLimb(_pivot, new FlxMatrix(1, 0, 0, 1, origin.x - _pivot.frame.width * 0.5, origin.y - _pivot.frame.height * 0.5), cameras);
-			drawLimb(_indicator, new FlxMatrix(1, 0, 0, 1, -_indicator.frame.width * 0.5, -_indicator.frame.height * 0.5), cameras);
+			_tmpMat.setTo(1, 0, 0, 1, origin.x - _pivot.frame.width * 0.5, origin.y - _pivot.frame.height * 0.5);
+			drawLimb(_pivot, _tmpMat, cameras);
+
+			_tmpMat.setTo(1, 0, 0, 1, -_indicator.frame.width * 0.5, -_indicator.frame.height * 0.5);
+			drawLimb(_indicator, _tmpMat, cameras);
 		}
+	}
+
+	var _camArr:Array<FlxCamera> = [null];
+	function _singleCam(cam:FlxCamera):Array<FlxCamera>
+	{
+		_camArr[0] = cam;
+		return _camArr;
+	}
+
+	var _elemObj:{instance:FlxElement} = {instance: null};
+	function _elemInstance(?instance:FlxElement)
+	{
+		_elemObj.instance = instance;
+		return _elemObj;
 	}
 
 	var st = 0;
@@ -280,8 +317,9 @@ class FlxAnimate extends FlxSprite
 
 				instance.symbol._filterMatrix.copyFrom(instance.symbol.cacheAsBitmapMatrix);
 
-				parseElement(instance, instance.symbol._filterMatrix, new ColorTransform(), {instance: instance}, [instance.symbol._filterCamera]);
-
+				_col.setMultipliers(1,1,1,1);
+				_col.setOffsets(0,0,0,0);
+				parseElement(instance, instance.symbol._filterMatrix, _col, _elemInstance(instance), _singleCam(instance.symbol._filterCamera));
 
 				@:privateAccess
 				renderFilter(instance.symbol, instance.symbol.filters, renderer);
@@ -332,7 +370,7 @@ class FlxAnimate extends FlxSprite
 					{
 						renderLayer(frame, new FlxMatrix(), new ColorTransform(), {instance: null}, [layer._filterCamera]);
 
-						layer._filterMatrix.identity();
+				// 		layer._filterMatrix.identity();
 
 						frame._renderDirty = false;
 					}
@@ -349,7 +387,7 @@ class FlxAnimate extends FlxSprite
 				var isMasked = layer._clipper != null;
 				var isMasker = layer.type == Clipper;
 
-				var coloreffect = new ColorTransform();
+				var coloreffect = _col;
 				coloreffect.__copyFrom(colorEffect);
 				if (frame.colorEffect != null)
 					coloreffect.concat(frame.colorEffect.__create());
@@ -358,11 +396,11 @@ class FlxAnimate extends FlxSprite
 				{
 					if (!frame._renderDirty && layer._filterFrame != null)
 					{
-						var mat = new FlxMatrix();
+						var mat = _tmpMat;
 						mat.copyFrom(layer._filterMatrix);
 						mat.concat(matrix);
 
-						drawLimb(layer._filterFrame, mat, coloreffect, filterin, (isMasked) ? [layer._clipper.maskCamera] : cameras);
+						drawLimb(layer._filterFrame, mat, coloreffect, filterin, (isMasked) ? _singleCam(layer._clipper.maskCamera) : cameras);
 						continue;
 					}
 					else
@@ -387,8 +425,8 @@ class FlxAnimate extends FlxSprite
 						continue;
 				}
 
-				renderLayer(frame, (toBitmap || isMasker || isMasked) ? new FlxMatrix() : matrix, coloreffect, (toBitmap || isMasker || isMasked) ? {instance: null} : filterInstance, (toBitmap || isMasker) ? [layer._filterCamera] : (isMasked) ? [layer._clipper.maskCamera] : cameras);
-
+				_tmpMat.identity();
+				renderLayer(frame, (toBitmap || isMasker || isMasked) ? _tmpMat : matrix, coloreffect, (toBitmap || isMasker || isMasked) ? _elemInstance(null) : filterInstance, (toBitmap || isMasker) ? _singleCam(layer._filterCamera) : (isMasked) ? _singleCam(layer._clipper.maskCamera) : cameras);
 
 				if (toBitmap)
 				{
@@ -398,11 +436,11 @@ class FlxAnimate extends FlxSprite
 
 					frame._renderDirty = false;
 
-					var mat = new FlxMatrix();
+					var mat = _tmpMat;
 					mat.copyFrom(layer._filterMatrix);
 					mat.concat(matrix);
 
-					drawLimb(layer._filterFrame, mat, coloreffect, filterin, (isMasked) ? [layer._clipper.maskCamera] : cameras);
+					drawLimb(layer._filterFrame, mat, coloreffect, filterin, (isMasked) ? _singleCam(layer._clipper.maskCamera) : cameras);
 				}
 				if (isMasker)
 				{
@@ -410,7 +448,7 @@ class FlxAnimate extends FlxSprite
 
 					renderMask(layer, renderer);
 
-					var mat = new FlxMatrix();
+					var mat = _tmpMat;
 					mat.copyFrom(layer._filterMatrix);
 					mat.concat(matrix);
 
@@ -426,7 +464,6 @@ class FlxAnimate extends FlxSprite
 	}
 	function renderFilter(filterInstance:IFilterable, filters:Array<BitmapFilter>, renderer:FlxAnimateFilterRenderer, ?mask:FlxCamera)
 	{
-		var masking = false;
 		var filterCamera = filterInstance._filterCamera;
 		filterCamera.render();
 
@@ -516,7 +553,7 @@ class FlxAnimate extends FlxSprite
 			mask.canvas.graphics.clear();
 			return;
 		}
-		var p = new FlxPoint(mBounds.x, mBounds.y);
+		var p = FlxPoint.get(mBounds.x, mBounds.y);
 
 		p.x -= bounds.x;
 		p.y -= bounds.y;
@@ -524,6 +561,7 @@ class FlxAnimate extends FlxSprite
 		var lMask = renderer.graphicstoBitmapData(mask.canvas.graphics, instance._bmp1, p);
 		var mrBmp = renderer.graphicstoBitmapData(masker.canvas.graphics, instance._bmp2);
 
+		p.put();
 
 
 		// instance._filterFrame.parent.bitmap.copyPixels(instance._bmp1, instance._bmp1.rect, instance._bmp1.rect.topLeft, instance._bmp2, instance._bmp2.rect.topLeft, true);
@@ -531,7 +569,6 @@ class FlxAnimate extends FlxSprite
 
 
 		instance._filterMatrix.translate((Math.round(bounds.x)), (Math.round(bounds.y)));
-
 
 		@:privateAccess
 		mask.clearDrawStack();
@@ -549,7 +586,7 @@ class FlxAnimate extends FlxSprite
 	{
 		var badPress:Bool = false;
 		var goodPress:Bool = false;
-		#if !mobile
+		#if FLX_MOUSE
 		if (FlxG.mouse.pressed && FlxG.mouse.overlaps(this))
 			goodPress = true;
 		if (FlxG.mouse.pressed && !FlxG.mouse.overlaps(this) && !goodPress)
@@ -590,6 +627,9 @@ class FlxAnimate extends FlxSprite
 		return frame;
 	}
 	var _mat:FlxMatrix = new FlxMatrix();
+	var _tmpMat:FlxMatrix = new FlxMatrix();
+	var _col:ColorTransform = new ColorTransform();
+
 	function drawLimb(limb:FlxFrame, _matrix:FlxMatrix, ?colorTransform:ColorTransform = null, filterin:Bool = false, ?blendMode:BlendMode, ?scrollFactor:FlxPoint = null, cameras:Array<FlxCamera> = null)
 	{
 		if (colorTransform != null && (colorTransform.alphaMultiplier == 0 || colorTransform.alphaOffset == -255) || limb == null || limb.type == EMPTY)
@@ -603,9 +643,9 @@ class FlxAnimate extends FlxSprite
 
 		for (camera in cameras)
 		{
-			_mat.identity();
-			limb.prepareMatrix(_mat);
 			var matrix = _mat;
+			matrix.identity();
+			limb.prepareMatrix(matrix);
 			matrix.concat(_matrix);
 
 			if (camera == null || !camera.visible || !camera.exists)
@@ -706,9 +746,14 @@ class FlxAnimate extends FlxSprite
 
 	override function destroy()
 	{
-		if (anim != null)
-			anim.destroy();
-		anim = null;
+		anim = FlxDestroyUtil.destroy(anim);
+
+		_mat = null;
+		_tmpMat = null;
+		_col = null;
+
+		_camArr = null;
+		_elemObj = null;
 
 		// #if FLX_SOUND_SYSTEM
 		// if (audio != null)
@@ -780,12 +825,12 @@ class FlxAnimate extends FlxSprite
 	public static function fromSettings()
 	{}
 
-	function atlasSetting(Path:String)
+	function atlasSetting(directoryPath:String)
 	{
 		var jsontxt:String = null;
-		if (haxe.io.Path.extension(Path) == "zip")
+		if (haxe.io.Path.extension(directoryPath) == "zip")
 		{
-			var thing = Zip.readZip(Assets.getBytes(Path));
+			var thing = Zip.readZip(Assets.getBytes(directoryPath));
 
 			for (list in Zip.unzip(thing))
 			{
@@ -800,7 +845,7 @@ class FlxAnimate extends FlxSprite
 			FlxAnimateFrames.zip = thing;
 		}
 		else
-			jsontxt = openfl.Assets.getText('$Path/Animation.json');
+			jsontxt = openfl.Assets.getText('$directoryPath/Animation.json');
 
 		return jsontxt;
 	}
