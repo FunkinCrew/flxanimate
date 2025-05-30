@@ -10,9 +10,7 @@ import openfl.filters.*;
 @:noCompletion
 class AnimationData
 {
-
 	// public static var internalParam:EReg = ~/_FA{/;
-
 	// public static var bracketReg:EReg = ~/(\{([^{}]|(?R))*\})/s;.
 
 	/**
@@ -24,7 +22,7 @@ class AnimationData
 	 */
 	public static function setFieldBool(abstracto:Dynamic, things:Array<String>, ?set:Dynamic):Dynamic
 	{
-		//TODO: The comment below this comment.
+		// TODO: The comment below this comment.
 		// GeoKureli told me that Reflect is shit, but I have literally no option but to use this.
 		// If I have another thing to use that works the same, should replace this lol
 		if (abstracto == null)
@@ -43,6 +41,7 @@ class AnimationData
 		}
 		return Reflect.field(abstracto, "");
 	}
+
 	/**
 	 * Parses a Color Effect from a JSON file into a enumeration of `ColorEffect`.
 	 * @param effect The json field.
@@ -51,7 +50,8 @@ class AnimationData
 	{
 		var colorEffect = None;
 
-		if (effect == null) return colorEffect;
+		if (effect == null)
+			return colorEffect;
 
 		switch (effect.M)
 		{
@@ -62,26 +62,27 @@ class AnimationData
 			case Brightness, "Brightness":
 				colorEffect = Brightness(effect.BRT);
 			case Advanced, "Advanced":
-			{
-				var CT = new ColorTransform();
-				CT.redMultiplier = effect.RM;
-				CT.redOffset = effect.RO;
-				CT.greenMultiplier = effect.GM;
-				CT.greenOffset = effect.GO;
-				CT.blueMultiplier = effect.BM;
-				CT.blueOffset = effect.BO;
-				CT.alphaMultiplier = effect.AM;
-				CT.alphaOffset = effect.AO;
-				colorEffect = Advanced(CT);
-			}
+				{
+					var CT = new ColorTransform();
+					CT.redMultiplier = effect.RM;
+					CT.redOffset = effect.RO;
+					CT.greenMultiplier = effect.GM;
+					CT.greenOffset = effect.GO;
+					CT.blueMultiplier = effect.BM;
+					CT.blueOffset = effect.BO;
+					CT.alphaMultiplier = effect.AM;
+					CT.alphaOffset = effect.AO;
+					colorEffect = Advanced(CT);
+				}
 			default:
 				flixel.FlxG.log.error('color Effect mode "${effect.M}" is invalid or not supported!');
 		}
 		return colorEffect;
 	}
+
 	static function colorFromString(color:String)
 	{
-		return Std.parseInt( "0x" + color.substring(1));
+		return Std.parseInt("0x" + color.substring(1));
 	}
 
 	/**
@@ -90,7 +91,8 @@ class AnimationData
 	 */
 	public static function fromFilterJson(filters:Filters = null)
 	{
-		if (filters == null) return null;
+		if (filters == null)
+			return null;
 
 		var bitmapFilter:Array<BitmapFilter> = [];
 
@@ -99,78 +101,82 @@ class AnimationData
 			switch (filter.split("_")[0])
 			{
 				case "DSF", "DropShadowFilter":
-				{
-					var drop:DropShadowFilter = Reflect.field(filters, filter);
-					bitmapFilter.unshift(new openfl.filters.DropShadowFilter(drop.DST, drop.AL, colorFromString(drop.C), drop.A, drop.BLX, drop.BLY, drop.STR, drop.Q, drop.IN, drop.KK));
-				}
+					{
+						var drop:DropShadowFilter = Reflect.field(filters, filter);
+						bitmapFilter.unshift(new openfl.filters.DropShadowFilter(drop.DST, drop.AL, colorFromString(drop.C), drop.A, drop.BLX, drop.BLY,
+							drop.STR, drop.Q, drop.IN, drop.KK));
+					}
 				case "GF", "GlowFilter":
-				{
-					var glow:GlowFilter = Reflect.field(filters, filter);
-					bitmapFilter.unshift(new openfl.filters.GlowFilter(colorFromString(glow.C), glow.A, glow.BLX, glow.BLY, glow.STR, glow.Q, glow.IN, glow.KK));
-				}
+					{
+						var glow:GlowFilter = Reflect.field(filters, filter);
+						bitmapFilter.unshift(new openfl.filters.GlowFilter(colorFromString(glow.C), glow.A, glow.BLX, glow.BLY, glow.STR, glow.Q, glow.IN,
+							glow.KK));
+					}
 				case "BF", "BevelFilter": // Friday Night Funkin reference ?!??!?!''1'!'?1'1''?1''
-				{
-					var bevel:BevelFilter = Reflect.field(filters, filter);
-					bitmapFilter.unshift(new flxanimate.filters.BevelFilter(bevel.DST, bevel.AL, colorFromString(bevel.HC), bevel.HA, colorFromString(bevel.SC), bevel.SA, bevel.BLX, bevel.BLY, bevel.STR, bevel.Q, bevel.TP, bevel.KK));
-				}
+					{
+						var bevel:BevelFilter = Reflect.field(filters, filter);
+						bitmapFilter.unshift(new flxanimate.filters.BevelFilter(bevel.DST, bevel.AL, colorFromString(bevel.HC), bevel.HA,
+							colorFromString(bevel.SC), bevel.SA, bevel.BLX, bevel.BLY, bevel.STR, bevel.Q, bevel.TP, bevel.KK));
+					}
 				case "BLF", "BlurFilter":
-				{
-					var blur:BlurFilter = Reflect.field(filters, filter);
-					bitmapFilter.unshift(new openfl.filters.BlurFilter(blur.BLX, blur.BLY, blur.Q));
-				}
+					{
+						var blur:BlurFilter = Reflect.field(filters, filter);
+						bitmapFilter.unshift(new openfl.filters.BlurFilter(blur.BLX, blur.BLY, blur.Q));
+					}
 				case "ACF", "AdjustColorFilter":
-				{
-					var adjustColor:AdjustColorFilter = Reflect.field(filters, filter);
+					{
+						var adjustColor:AdjustColorFilter = Reflect.field(filters, filter);
 
-					var colorAdjust = new AdjustColor();
+						var colorAdjust = new AdjustColor();
 
-					colorAdjust.hue = adjustColor.H;
-					colorAdjust.brightness = adjustColor.BRT;
-					colorAdjust.contrast = adjustColor.CT;
-					colorAdjust.saturation = adjustColor.SAT;
+						colorAdjust.hue = adjustColor.H;
+						colorAdjust.brightness = adjustColor.BRT;
+						colorAdjust.contrast = adjustColor.CT;
+						colorAdjust.saturation = adjustColor.SAT;
 
-					bitmapFilter.unshift(new openfl.filters.ColorMatrixFilter(colorAdjust.calculateFinalFlatArray()));
-				}
+						bitmapFilter.unshift(new openfl.filters.ColorMatrixFilter(colorAdjust.calculateFinalFlatArray()));
+					}
 
 				case "GGF", "GradientGlowFilter":
-				{
-					var gradient:GradientFilter = Reflect.field(filters, filter);
-					var colors:Array<Int> = [];
-					var alphas:Array<Float> = [];
-					var ratios:Array<Int> = [];
-
-					for (entry in gradient.GE)
 					{
-						colors.push(colorFromString(entry.C));
-						alphas.push(entry.A);
-						ratios.push(Std.int(entry.R * 255));
+						var gradient:GradientFilter = Reflect.field(filters, filter);
+						var colors:Array<Int> = [];
+						var alphas:Array<Float> = [];
+						var ratios:Array<Int> = [];
+
+						for (entry in gradient.GE)
+						{
+							colors.push(colorFromString(entry.C));
+							alphas.push(entry.A);
+							ratios.push(Std.int(entry.R * 255));
+						}
+
+						bitmapFilter.unshift(new flxanimate.filters.GradientGlowFilter(gradient.DST, gradient.AL, colors, alphas, ratios, gradient.BLX,
+							gradient.BLY, gradient.STR, gradient.Q, gradient.TP, gradient.KK));
 					}
-
-
-					bitmapFilter.unshift(new flxanimate.filters.GradientGlowFilter(gradient.DST, gradient.AL, colors, alphas, ratios, gradient.BLX, gradient.BLY, gradient.STR, gradient.Q, gradient.TP, gradient.KK));
-				}
 				case "GBF", "GradientBevelFilter":
-				{
-					var gradient:GradientFilter = Reflect.field(filters, filter);
-					var colors:Array<Int> = [];
-					var alphas:Array<Float> = [];
-					var ratios:Array<Int> = [];
-
-					for (entry in gradient.GE)
 					{
-						colors.push(colorFromString(entry.C));
-						alphas.push(entry.A);
-						ratios.push(Math.round(entry.R * 255));
+						var gradient:GradientFilter = Reflect.field(filters, filter);
+						var colors:Array<Int> = [];
+						var alphas:Array<Float> = [];
+						var ratios:Array<Int> = [];
+
+						for (entry in gradient.GE)
+						{
+							colors.push(colorFromString(entry.C));
+							alphas.push(entry.A);
+							ratios.push(Math.round(entry.R * 255));
+						}
+
+						bitmapFilter.unshift(new flxanimate.filters.GradientBevelFilter(gradient.DST, gradient.AL, colors, alphas, ratios, gradient.BLX,
+							gradient.BLY, gradient.STR, gradient.Q, gradient.TP, gradient.KK));
 					}
-
-
-					bitmapFilter.unshift(new flxanimate.filters.GradientBevelFilter(gradient.DST, gradient.AL, colors, alphas, ratios, gradient.BLX, gradient.BLY, gradient.STR, gradient.Q, gradient.TP, gradient.KK));
-				}
 			}
 		}
 
 		return bitmapFilter;
 	}
+
 	/**
 	 * Transforms a `ColorEffect` into a `ColorTransform`.
 	 * @param colorEffect The `ColorEffect`.
@@ -179,8 +185,8 @@ class AnimationData
 	{
 		var CT = null;
 
-		//if ([None, null].indexOf(colorEffect) == -1)
-		if(colorEffect != None && colorEffect != null)
+		// if ([None, null].indexOf(colorEffect) == -1)
+		if (colorEffect != None && colorEffect != null)
 		{
 			var params = colorEffect.getParameters();
 			CT = switch (colorEffect.getName())
@@ -193,10 +199,10 @@ class AnimationData
 			}
 		}
 
-
 		return CT;
 	}
 }
+
 /**
  * The types of Color Effects the symbol can have.
  */
@@ -208,6 +214,7 @@ enum ColorEffect
 	Alpha(Alpha:Float);
 	Advanced(transform:ColorTransform);
 }
+
 /**
  * The looping method for the current symbol.
  */
@@ -217,6 +224,7 @@ enum Loop
 	PlayOnce;
 	SingleFrame;
 }
+
 /**
  * The type the symbol can be.
  */
@@ -226,6 +234,7 @@ enum SymbolT
 	MovieClip;
 	Button;
 }
+
 /**
  * The type of behaviour `FlxLayer` can become.
  */
@@ -246,31 +255,29 @@ abstract AnimAtlas(AnimAtlasData) from AnimAtlasData
 	 * The main thing, the animation that makes the different drawings animate together and shit
 	 */
 	public var AN(get, never):Animation;
+
 	/**
 	 * This is where all the symbols that the main animation uses are stored. Can be `null`!
 	 */
 	public var SD(get, never):SymbolDictionary;
+
 	/**
 	 * A metadata, consisting of the framerate the document had been exported.
 	 */
 	public var MD(get, never):MetaData;
 
 	inline function get_AN():Animation
-	{
 		return this.AN ?? this.ANIMATION;
-	}
 
 	inline function get_MD():MetaData
-	{
 		return this.MD ?? this.metadata;
-	}
+
 	inline function get_SD()
-	{
 		return this.SD ?? this.SYMBOL_DICTIONARY;
-	}
 }
 
-typedef AnimAtlasData = {
+typedef AnimAtlasData =
+{
 	?AN:Animation,
 	?ANIMATION:Animation,
 	?MD:MetaData,
@@ -278,6 +285,7 @@ typedef AnimAtlasData = {
 	?SD:SymbolDictionary,
 	?SYMBOL_DICTIONARY:SymbolDictionary
 }
+
 /**
  * An `Array` of multiple symbols. All symbols in the Dictionary are supposedly used in the main Animation or in other symbols.
  */
@@ -294,7 +302,8 @@ abstract SymbolDictionary(SymbolDictionaryData) from SymbolDictionaryData
 	}
 }
 
-typedef SymbolDictionaryData = {
+typedef SymbolDictionaryData =
+{
 	?S:Array<Symbol>,
 	?Symbols:Array<Symbol>
 }
@@ -305,6 +314,7 @@ abstract Animation(AnimationTypeData) from AnimationTypeData
 	 * The name of the Flash document the texture atlas was exported with.
 	 */
 	public var N(get, never):String;
+
 	/**
 	 * The Stage Instance. This represents the element settings the texture atlas was exported when clicking on-stage
 	 * **WARNING:** if you export the texture atlas inside the symbol dictionary, this field won't appear, meaning it can be `null`.
@@ -321,30 +331,21 @@ abstract Animation(AnimationTypeData) from AnimationTypeData
 	 */
 	public var TL(get, never):Timeline;
 
-	
-
 	inline function get_N():String
-	{
 		return this.N ?? this.name;
-	}
 
 	inline function get_STI()
-	{
 		return this.STI ?? this.StageInstance;
-	}
 
 	inline function get_SN():String
-	{
 		return this.SN ?? this.SYMBOL_name;
-	}
 
 	inline function get_TL():Timeline
-	{
 		return this.TL ?? this.TIMELINE;
-	}
 }
 
-typedef AnimationTypeData = {
+typedef AnimationTypeData =
+{
 	?N:String,
 	?name:String,
 	?STI:StageInstance,
@@ -368,13 +369,11 @@ abstract StageInstance(StageInstanceData) from StageInstanceData
 	public var SI(get, never):SymbolInstance;
 
 	inline function get_SI():SymbolInstance
-	{
 		return this.SI ?? this.SYMBOL_Instance;
-	}
 }
 
-
-typedef StageInstanceData = {
+typedef StageInstanceData =
+{
 	?SI:SymbolInstance,
 	?SYMBOL_Instance:SymbolInstance
 }
@@ -388,23 +387,21 @@ abstract Symbol(SymbolData) from SymbolData
 	 * The name of the symbol.
 	 */
 	public var SN(get, never):String;
+
 	/**
 	 * The timeline of the Symbol.
 	 */
 	public var TL(get, never):Timeline;
 
 	inline function get_SN():String
-	{
 		return this.SN ?? this.SYMBOL_name;
-	}
 
 	inline function get_TL():Timeline
-	{
 		return this.TL ?? this.TIMELINE;
-	}
 }
 
-typedef SymbolData = {
+typedef SymbolData =
+{
 	?SN:String,
 	?SYMBOL_name:String,
 	?TL:Timeline,
@@ -422,19 +419,19 @@ abstract Timeline(TimelineData) from TimelineData
 	public var L(get, set):Array<Layers>;
 
 	inline function get_L():Array<Layers>
-	{
 		return this.L ?? this.LAYERS;
-	}
+
 	function set_L(value:Array<Layers>)
 	{
 		if (this.L != null)
 			return this.L = value;
-		else 
+		else
 			return this.LAYERS = value;
 	}
 }
 
-typedef TimelineData = {
+typedef TimelineData =
+{
 	?L:Array<Layers>,
 	?LAYERS:Array<Layers>
 }
@@ -448,35 +445,36 @@ abstract Layers(LayersData) from LayersData
 	 * The name of the layer.
 	 */
 	public var LN(get, never):String;
+
 	/**
 	 * Type of layer, It's usually to indicate that the Layer is a mask or is masked.
 	 */
 	public var LT(get, never):String;
+
 	/**
 	 * if the layer is masked, this field will appear to explain which layer is being clipped to, usually the next one.
 	 */
 	public var Clpb(get, never):String;
+
 	/**
 	 * An `Array` of KeyFrames inside the layer.
 	 */
 	public var FR(get, set):Array<Frame>;
 
 	inline function get_LN():String
-	{
 		return this.LN ?? this.Layer_name;
-	}
+
 	inline function get_LT():String
-	{
 		return this.LT ?? this.Layer_type;
-	}
+
 	inline function get_Clpb():String
-	{
 		return this.Clpb ?? this.Clipped_by;
-	}
+
 	inline function get_FR():Array<Frame>
 	{
 		return this.FR ?? this.Frames;
 	}
+
 	function set_FR(value:Array<Frame>):Array<Frame>
 	{
 		if (this.FR != null)
@@ -486,7 +484,8 @@ abstract Layers(LayersData) from LayersData
 	}
 }
 
-typedef LayersData = {
+typedef LayersData =
+{
 	?LN:String,
 	?Layer_name:String,
 	?LT:String,
@@ -495,7 +494,6 @@ typedef LayersData = {
 	?Clipped_by:String,
 	?FR:Array<Frame>,
 	?Frames:Array<Frame>,
-
 }
 
 /**
@@ -503,22 +501,21 @@ typedef LayersData = {
  */
 abstract MetaData(MetaDataTypeData) from MetaDataTypeData
 {
-
 	/**
 	 * The framerate.
 	 */
 	public var FRT(get, never):Float;
 
 	inline function get_FRT()
-	{
 		return this.FRT ?? this.framerate;
-	}
 }
 
-typedef MetaDataTypeData = {
+typedef MetaDataTypeData =
+{
 	?FRT:Float,
 	?framerate:Float
 }
+
 /**
  * A KeyFrame with everything essential + labels and ColorEffects/Filters.
  */
@@ -528,14 +525,17 @@ abstract Frame(FrameData) from FrameData
 	 * The "name of the frame", basically labels that you can use as thingies for more cool stuff to program lol
 	 */
 	public var N(get, never):String;
+
 	/**
 	 * The frame index, aka the current number frame.
 	 */
 	public var I(get, never):Int;
+
 	/**
 	 * The duration of the frame.
 	 */
 	public var DU(get, never):Int;
+
 	/**
 	 * The elements that the frame has. Drawings/symbols to be specific
 	 */
@@ -552,29 +552,19 @@ abstract Frame(FrameData) from FrameData
 	public var F(get, never):Filters;
 
 	inline function get_N():String
-	{
 		return this.N ?? this.name;
-	}
 
 	inline function get_I():Int
-	{
 		return this.I ?? this.index;
-	}
 
 	inline function get_DU():Int
-	{
 		return this.DU ?? this.duration;
-	}
 
 	inline function get_E():Array<Element>
-	{
 		return this.E ?? this.elements;
-	}
 
 	inline function get_C():ColorEffects
-	{
 		return this.C ?? this.color;
-	}
 
 	function set_C(value:ColorEffects)
 	{
@@ -585,9 +575,7 @@ abstract Frame(FrameData) from FrameData
 	}
 
 	inline function get_F():Filters
-	{
 		return this.F ?? this.filters;
-	}
 }
 
 typedef FrameData =
@@ -605,6 +593,7 @@ typedef FrameData =
 	var ?F:Filters;
 	var ?filters:Filters;
 }
+
 /**
  * The Element thing inside the frame
  */
@@ -619,17 +608,14 @@ abstract Element(ElementData) from ElementData
 	public var SI(get, never):SymbolInstance;
 
 	inline function get_SI():SymbolInstance
-	{
 		return this.SI ?? this.SYMBOL_Instance;
-	}
 
 	inline function get_ASI():AtlasSymbolInstance
-	{
 		return this.ASI ?? this.ATLAS_SPRITE_instance;
-	}
 }
 
-typedef ElementData = StageInstanceData & {
+typedef ElementData = StageInstanceData &
+{
 	?ASI:AtlasSymbolInstance,
 	?ATLAS_SPRITE_instance:AtlasSymbolInstance
 }
@@ -648,6 +634,7 @@ abstract SymbolInstance(SymbolInstanceData) from SymbolInstanceData
 	 * the name instance of the Symbol.
 	 */
 	public var IN(get, never):String;
+
 	/**
 	 * the type of symbol,
 	 * Which can be a:
@@ -666,6 +653,7 @@ abstract SymbolInstance(SymbolInstanceData) from SymbolInstanceData
 	 * this sets on which frame it's the symbol, Graphic only
 	 */
 	public var FF(get, never):Int;
+
 	/**
 	 * the Loop Type of the symbol, which can be:
 	 * - Loop
@@ -673,14 +661,17 @@ abstract SymbolInstance(SymbolInstanceData) from SymbolInstanceData
 	 * - Single Frame
 	 */
 	public var LP(get, never):LoopType;
+
 	/**
 	 * the Transformation Point of the symbol, basically the pivot that determines how it scales or not in Flash
 	 */
 	public var TRP(get, never):TransformationPoint;
+
 	/**
 	 * The Matrix of the Symbol, Be aware from Neo! He can be anywhere!!! :fearful:
 	 */
 	public var M3D(get, never):OneOfTwo<Array<Float>, Matrix3D>;
+
 	/**
 	 * The Color Effect of the symbol, it says color but it affects alpha too lol.
 	 */
@@ -692,49 +683,35 @@ abstract SymbolInstance(SymbolInstanceData) from SymbolInstanceData
 	public var F(get, never):Filters;
 
 	inline function get_SN()
-	{
 		return this.SN ?? this.SYMBOL_name;
-	}
 
 	inline function get_IN()
-	{
 		return this.IN ?? this.Instance_Name;
-	}
 
 	inline function get_ST()
-	{
 		return this.ST ?? this.symbolType;
-	}
 
 	inline function get_bitmap()
-	{
 		return this.BM ?? this.bitmap;
-	}
+
 	inline function get_FF()
 	{
 		var ff:Null<Int> = this.FF ?? this.firstFrame;
 		return (ff == null) ? 0 : ff;
 	}
 
-	inline  function get_LP()
-	{
+	inline function get_LP()
 		return this.LP ?? this.loop;
-	}
 
 	inline function get_TRP()
-	{
 		return this.TRP ?? this.transformationPoint;
-	}
 
 	inline function get_M3D()
-	{
 		return this.M3D ?? this.Matrix3D;
-	}
 
 	inline function get_C()
-	{
 		return this.C ?? this.color;
-	}
+
 	inline function set_C(value:ColorEffects)
 	{
 		if (this.C != null)
@@ -744,12 +721,11 @@ abstract SymbolInstance(SymbolInstanceData) from SymbolInstanceData
 	}
 
 	inline function get_F()
-	{
 		return this.F ?? this.filters;
-	}
 }
 
-typedef SymbolInstanceData = {
+typedef SymbolInstanceData =
+{
 	?SN:String,
 	?SYMBOL_name:String,
 	?IN:String,
@@ -772,17 +748,18 @@ typedef SymbolInstanceData = {
 	?filters:Filters
 }
 
-
 abstract ColorEffects(ColorEffectsData) from ColorEffectsData
 {
 	/**
 	 * What type of Effect is it.
 	 */
 	public var M(get, never):ColorMode;
+
 	/**
 	 * tint Color, basically, How's the color gonna be lol.
 	 */
 	public var TC(get, never):String;
+
 	/**
 	 * tint multiplier, or the alpha of **THE COLOR!** Don't forget that.
 	 */
@@ -804,56 +781,44 @@ abstract ColorEffects(ColorEffectsData) from ColorEffectsData
 	public var BRT(get, never):Float;
 
 	inline function get_M()
-	{
 		return this.M ?? this.mode;
-	}
+
 	inline function get_TC()
-	{
 		return this.TC ?? this.tintColor;
-	}
+
 	inline function get_TM()
-	{
 		return this.TM ?? this.tintMultiplier;
-	}
+
 	inline function get_AM()
-	{
 		return this.AM ?? this.alphaMultiplier;
-	}
+
 	inline function get_AO()
-	{
 		return this.AO ?? this.AlphaOffset;
-	}
+
 	inline function get_RM()
-	{
 		return this.RM ?? this.RedMultiplier;
-	}
+
 	inline function get_RO()
-	{
 		return this.RO ?? this.redOffset;
-	}
+
 	inline function get_GM()
-	{
 		return this.GM ?? this.greenMultiplier;
-	}
+
 	inline function get_GO()
-	{
 		return this.GO ?? this.greenOffset;
-	}
+
 	inline function get_BM()
-	{
 		return this.BM ?? this.blueMultiplier;
-	}
+
 	inline function get_BO()
-	{
 		return this.BO ?? this.blueOffset;
-	}
+
 	inline function get_BRT()
-	{
 		return this.BRT ?? this.Brightness;
-	}
 }
 
-typedef ColorEffectsData = {
+typedef ColorEffectsData =
+{
 	?M:ColorMode,
 	?mode:ColorMode,
 	?TC:String,
@@ -895,17 +860,15 @@ abstract Filters(FiltersData) from FiltersData
 	public var GF(get, never):GlowFilter;
 
 	inline function get_ACF()
-	{
 		return this.ACF ?? this.AdjustColorFilter;
-	}
+
+	// does this glowfilter have an accompyaning alias?
 	inline function get_GF()
-	{
-		// does this glowfilter have an accompyaning alias?
 		return this.GF;
-	}
 }
 
-typedef FiltersData = {
+typedef FiltersData =
+{
 	?ACF:AdjustColorFilter,
 	?AdjustColorFilter:AdjustColorFilter,
 	?GF:GlowFilter
@@ -920,38 +883,37 @@ abstract AdjustColorFilter(AdjustColorFilterData) from AdjustColorFilterData
 	 * The brightness value. Can be from -100 to 100
 	 */
 	public var BRT(get, never):Float;
+
 	/**
 	 * The value of contrast. Can be from -100 to 100
 	 */
 	public var CT(get, never):Float;
+
 	/**
 	 * The value of saturation. Can be from -100 to 100
 	 */
 	public var SAT(get, never):Float;
+
 	/**
 	 * The hue value. Can be from -180 to 180
 	 */
 	public var H(get, never):Float;
 
 	inline function get_BRT()
-	{
 		return this.BRT ?? this.brightness;
-	}
+
 	inline function get_CT()
-	{
 		return this.CT ?? this.contrast;
-	}
+
 	inline function get_SAT()
-	{
 		return this.SAT ?? this.saturation;
-	}
+
 	inline function get_H()
-	{
 		return this.H ?? this.hue;
-	}
 }
 
-typedef AdjustColorFilterData = { 
+typedef AdjustColorFilterData =
+{
 	?BRT:Float,
 	?brightness:Float,
 	?CT:Float,
@@ -971,10 +933,12 @@ abstract BlurFilter(BlurFilterData) from BlurFilterData
 	 * The amount of blur horizontally.
 	 */
 	public var BLX(get, never):Float;
+
 	/**
 	 * The amount of blur vertically.
 	 */
 	public var BLY(get, never):Float;
+
 	/**
 	 * The number of passes the filter has.
 	 * When the quality is set to three, it should approximate to a Gaussian Blur.
@@ -983,20 +947,17 @@ abstract BlurFilter(BlurFilterData) from BlurFilterData
 	public var Q(get, never):Int;
 
 	inline function get_BLX()
-	{
 		return this.BLX ?? this.blurX;
-	}
+
 	inline function get_BLY()
-	{
 		return this.BLY ?? this.blurY;
-	}
+
 	inline function get_Q()
-	{
 		return this.Q ?? this.quality;
-	}
 }
 
-typedef BlurFilterData = {
+typedef BlurFilterData =
+{
 	?BLX:Float,
 	?blurX:Float,
 	?BLY:Float,
@@ -1009,12 +970,11 @@ typedef BlurFilterData = {
 // but idk how to do that lol ! So we just copy-paste...
 abstract GlowFilter(GlowFilterData)
 {
-	// See BlurFilter 
+	// See BlurFilter
 	public var BLX(get, never):Float;
 	public var BLY(get, never):Float;
 	public var Q(get, never):Int;
 
-	
 	public var C(get, never):String;
 	public var A(get, never):Float;
 	public var STR(get, never):Float;
@@ -1022,43 +982,32 @@ abstract GlowFilter(GlowFilterData)
 	public var IN(get, never):Bool;
 
 	inline function get_BLX()
-	{
 		return this.BLX ?? this.blurX;
-	}
 
 	inline function get_BLY()
-	{
 		return this.BLY ?? this.blurY;
-	}
 
 	inline function get_Q()
-	{
 		return this.Q ?? this.quality;
-	}
 
 	inline function get_C()
-	{
 		return this.C ?? this.color;
-	}
+
 	inline function get_A()
-	{
 		return this.A ?? this.alpha;
-	}
+
 	inline function get_STR()
-	{
 		return this.STR ?? this.strength;
-	}
+
 	inline function get_KK()
-	{
 		return this.KK ?? this.knockout;
-	}
+
 	inline function get_IN()
-	{
 		return this.IN ?? this.inner;
-	}
 }
 
-typedef GlowFilterData = BlurFilterData & {
+typedef GlowFilterData = BlurFilterData &
+{
 	?C:String,
 	?color:String,
 	?A:Float,
@@ -1091,60 +1040,41 @@ abstract DropShadowFilter(DropShadowFilterData)
 	public var DST(get, never):Float;
 
 	inline function get_BLX()
-	{
 		return this.BLX ?? this.blurX;
-	}
 
 	inline function get_BLY()
-	{
 		return this.BLY ?? this.blurY;
-	}
 
 	inline function get_Q()
-	{
 		return this.Q ?? this.quality;
-	}
 
 	inline function get_C()
-	{
 		return this.C ?? this.color;
-	}
 
 	inline function get_A()
-	{
 		return this.A ?? this.alpha;
-	}
 
 	inline function get_STR()
-	{
 		return this.STR ?? this.strength;
-	}
 
 	inline function get_KK()
-	{
 		return this.KK ?? this.knockout;
-	}
 
 	inline function get_IN()
-	{
 		return this.IN ?? this.inner;
-	}
 
 	inline function get_HO()
-	{
 		return this.HO ?? this.hideObject;
-	}
+
 	inline function get_AL()
-	{
 		return this.AL ?? this.angle;
-	}
+
 	inline function get_DST()
-	{
 		return this.DST ?? this.distance;
-	}
 }
 
-typedef DropShadowFilterData = GlowFilterData & {
+typedef DropShadowFilterData = GlowFilterData &
+{
 	?HO:Bool,
 	?hideObject:Bool,
 	?AL:Float,
@@ -1179,44 +1109,35 @@ abstract BevelFilter(BevelFilterData) from BevelFilterData
 		return this.Q ?? this.quality;
 
 	inline function get_SC()
-	{
 		return this.SC ?? this.shadowColor;
-	}
+
 	inline function get_SA()
-	{
 		return this.SA ?? this.shadowAlpha;
-	}
+
 	inline function get_HC()
-	{
 		return this.HC ?? this.highlightColor;
-	}
 
 	inline function get_HA()
-	{
 		return this.HA ?? this.highlightAlpha;
-	}
+
 	inline function get_STR()
-	{
 		return this.STR ?? this.strength;
-	}
+
 	inline function get_KK()
-	{
 		return this.KK ?? this.knockout;
-	}
+
 	inline function get_AL()
-	{
 		return this.AL ?? this.angle;
-	}
+
 	inline function get_DST()
-	{
 		return this.DST ?? this.distance;
-	}
+
 	inline function get_TP()
-	{
 		return this.TP ?? this.type;
-	}
 }
-typedef BevelFilterData = BlurFilterData & {
+
+typedef BevelFilterData = BlurFilterData &
+{
 	?SC:String,
 	?shadowColor:String,
 	?SA:Float,
@@ -1260,32 +1181,26 @@ abstract GradientFilter(GradientFilterData) from GradientFilterData
 		return this.Q ?? this.quality;
 
 	inline function get_STR()
-	{
 		return this.STR ?? this.strength;
-	}
+
 	inline function get_KK()
-	{
 		return this.KK ?? this.knockout;
-	}
+
 	inline function get_AL()
-	{
 		return this.AL ?? this.angle;
-	}
+
 	inline function get_DST()
-	{
 		return this.DST ?? this.distance;
-	}
+
 	inline function get_TP()
-	{
 		return this.TP ?? this.type;
-	}
+
 	inline function get_GE()
-	{
 		return this.GE ?? this.GradientEntries;
-	}
 }
 
-typedef GradientFilterData = BlurFilterData & {
+typedef GradientFilterData = BlurFilterData &
+{
 	?STR:Float,
 	?strength:Float,
 	?KK:Bool,
@@ -1306,23 +1221,18 @@ abstract GradientEntry(GradientEntryData) from GradientEntryData
 	public var C(get, never):String;
 	public var A(get, never):Float;
 
-
 	inline function get_R()
-	{
 		return this.R ?? this.ratio;
-	}
-	inline function get_C()
-	{
-		return this.C ?? this.color;
-	}
-	inline function get_A()
-	{
-		return this.A ?? this.alpha;
-	}
 
+	inline function get_C()
+		return this.C ?? this.color;
+
+	inline function get_A()
+		return this.A ?? this.alpha;
 }
 
-typedef GradientEntryData = {
+typedef GradientEntryData =
+{
 	?R:Float,
 	?ratio:Float,
 	?C:String,
@@ -1350,21 +1260,19 @@ abstract Bitmap(BitmapTypeData) from BitmapTypeData
 	 * Only used in earliest versions of texture atlas release. checks the position, nothing else lol
 	 */
 	public var POS(get, never):TransformationPoint;
-	
+
 	inline function get_N()
-	{
 		return this.N ?? this.name;
-	}
+
 	inline function get_POS()
-	{
 		return this.POS ?? this.Position;
-	}
 }
 
 // This doesn't follow the naming convention of "abstractnameData" because it would be "BitmapData"
 // Which could be confused for OpenFL's BitmapData class!
 // note: unimplemented
-typedef BitmapTypeData = {
+typedef BitmapTypeData =
+{
 	?N:String,
 	?name:String,
 	?POS:TransformationPoint,
@@ -1391,25 +1299,18 @@ abstract AtlasSymbolInstance(AtlasSymbolInstanceData) from AtlasSymbolInstanceDa
 	 */
 	public var M3D(get, never):OneOfTwo<Array<Float>, Matrix3D>;
 
-
 	inline function get_N()
-	{
 		return this.N ?? this.name;
-	}
 
 	inline function get_POS()
-	{
 		return this.POS ?? this.Position;
-	}
 
-	
 	inline function get_M3D()
-	{	
 		return this.M3D ?? this.Matrix3D;
-	}
 }
 
-typedef AtlasSymbolInstanceData = {
+typedef AtlasSymbolInstanceData =
+{
 	?N:String,
 	?name:String,
 	?POS:TransformationPoint,
@@ -1437,6 +1338,7 @@ typedef Matrix3D =
 	var m32:Float;
 	var m33:Float;
 }
+
 /**
  * Position Stuff
  */
@@ -1460,5 +1362,8 @@ enum abstract SymbolType(String) from String to String
 	var movieclip = "MC";
 	var button = "B";
 }
+
 @:forward
-abstract OneOfTwo<T1, T2>(Dynamic) from T1 from T2 to T1 to T2 {}
+abstract OneOfTwo<T1, T2>(Dynamic) from T1 from T2 to T1 to T2
+{
+}
