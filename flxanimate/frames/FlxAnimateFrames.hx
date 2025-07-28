@@ -42,8 +42,6 @@ class FlxAnimateFrames extends FlxAtlasFrames
 	{
 		var frames:FlxAnimateFrames = new FlxAnimateFrames();
 
-		var texts = Assets.list(TEXT).filter((text) -> StringTools.startsWith(text, '$Path/sprite'));
-
 		var texts = [];
 		var isDone = false;
 
