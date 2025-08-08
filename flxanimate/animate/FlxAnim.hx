@@ -598,18 +598,18 @@ class FlxAnim implements IFlxDestroyable
 		_tick = 0;
 		buttonMap = null;
 		animsMap = null;
-		curInstance.destroy();
+		curInstance?.destroy();
 		curInstance = null;
-		stageInstance.destroy();
+		stageInstance?.destroy();
 		stageInstance = null;
-		metadata.destroy();
+		metadata?.destroy();
 		metadata = null;
 		swfRender = false;
 		_parent = null;
-		for (symbol in symbolDictionary.iterator())
-		{
-			symbol.destroy();
-		}
+		if (symbolDictionary != null)
+			for (symbol in symbolDictionary.iterator())
+				symbol?.destroy();
+
 		symbolDictionary = null;
 	}
 }
